@@ -2,6 +2,7 @@ package com.example.covidtracker;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -18,6 +19,14 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.Description;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.github.mikephil.charting.utils.ColorTemplate;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,6 +41,10 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
     RequestQueue requestQueue;
     String url = "https://api.covid19api.com/summary";
     TextView activeNo, activeNoChng, dischargeNO, dischargeNOChng, deathNo, deathNoChng;
+    BarChart barChart;
+    ArrayList<BarEntry> data;
+    ArrayList<String> labelName;
+    ArrayList<AxisData> axisData = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,17 +58,15 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         dischargeNOChng = findViewById(R.id.discharge_no_chng);
         deathNo = findViewById(R.id.death_no);
         deathNoChng = findViewById(R.id.death_no_change);
+        barChart = findViewById(R.id.bar_graph);
 
         requestQueue = Volley.newRequestQueue(this);
 
+        data = new ArrayList<>();
+        labelName = new ArrayList<>();
+
         List<String> country = new ArrayList<String>();
         country.add("Global");
-//        country.add("India");
-//        country.add("Business Services");
-//        country.add("Computers");
-//        country.add("Education");
-//        country.add("Personal");
-//        country.add("Travel");
 
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
@@ -102,6 +113,42 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
 
     }
 
+    private void barExecution() {
+
+        data.clear();
+        labelName.clear();
+        barChart.invalidate();
+        barChart.clear();
+
+        for (int i=0;i<axisData.size();i++){
+            String hStatus = axisData.get(i).getHealthStatus();
+            int num = axisData.get(i).getNumbers();
+            data.add(new BarEntry(i,num));
+            labelName.add(hStatus);
+        }
+
+        BarDataSet barDataSet = new BarDataSet(data,"Status Graph");
+        barDataSet.setColors(ColorTemplate.COLORFUL_COLORS);
+        Description description = new Description();
+        description.setText("Status");
+        barChart.setDescription(description);
+        BarData barData = new BarData(barDataSet);
+        barChart.setData(barData);
+
+        XAxis xAxis = barChart.getXAxis();
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(labelName));
+
+        xAxis.setPosition(XAxis.XAxisPosition.TOP);
+        xAxis.setDrawGridLines(false);
+        xAxis.setDrawAxisLine(false);
+        xAxis.setGranularity(1f);
+        xAxis.setLabelCount(labelName.size());
+        xAxis.setLabelRotationAngle(270);
+        barChart.animateY(2000);
+        barChart.invalidate();
+
+    }
+
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
@@ -115,6 +162,9 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
             dischargeNOChng.setText("( "+0+" )");
             deathNo.setText(String.valueOf(0));
             deathNoChng.setText("( "+0+" )");
+
+            fillPatienceDate(0,0,0);
+            barExecution();
 
         } else {
             Toast.makeText(this, parent.getSelectedItem().toString(), Toast.LENGTH_SHORT).show();
@@ -159,12 +209,6 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
                                         activeNoChng.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_upward, 0, 0, 0);
                                     }
 
-                                    if (NewRecovered==0){
-                                        dischargeNOChng.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
-                                    }
-                                    if (NewDeaths==0){
-                                        deathNoChng.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
-                                    }
 
                                     activeNo.setText(String.valueOf(TotalConfirmed-TotalRecovered-TotalDeaths));
                                     activeNoChng.setText("( "+String.valueOf(Math.abs(activeChng))+" )");
@@ -172,6 +216,11 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
                                     dischargeNOChng.setText("( "+NewRecovered+" )");
                                     deathNo.setText(String.valueOf(TotalDeaths));
                                     deathNoChng.setText("( "+NewDeaths+" )");
+
+                                    fillPatienceDate(TotalConfirmed-TotalRecovered-TotalDeaths, TotalRecovered,
+                                            TotalDeaths);
+
+                                    barExecution();
 
                                     break;
                                 }
@@ -191,6 +240,15 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         });
 
         requestQueue.add(request);
+
+    }
+
+    public void fillPatienceDate(int Active, int Discharge, int Death){
+        axisData.clear();
+        axisData.add(new AxisData("Active",Active));
+        axisData.add(new AxisData("Discharge",Discharge));
+        axisData.add(new AxisData("Death",Death));
+
 
     }
 }
