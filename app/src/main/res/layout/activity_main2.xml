@@ -187,10 +187,21 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="10dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/last_update"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/data" />
+
+    <TextView
+        android:id="@+id/last_update"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="2020-11-04T09:58:06Z"
+        android:textAlignment="center"
+        android:textColor="#000000"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@+id/bar_graph"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

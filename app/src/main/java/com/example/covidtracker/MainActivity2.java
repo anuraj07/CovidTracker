@@ -154,20 +154,60 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
 
 
         if (parent.getSelectedItem().toString().equals("Global")){
-            Toast.makeText(this, parent.getSelectedItem().toString(), Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, parent.getSelectedItem().toString(), Toast.LENGTH_SHORT).show();
 
-            activeNo.setText(String.valueOf(0));
-            activeNoChng.setText("( "+0+" )");
-            dischargeNO.setText(String.valueOf(0));
-            dischargeNOChng.setText("( "+0+" )");
-            deathNo.setText(String.valueOf(0));
-            deathNoChng.setText("( "+0+" )");
+            JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                JSONObject jsonObject = response.getJSONObject("Global");
 
-            fillPatienceDate(0,0,0);
-            barExecution();
+                                int NewConfirmed = jsonObject.getInt("NewConfirmed");
+                                int TotalConfirmed = jsonObject.getInt("TotalConfirmed");
+                                int NewDeaths = jsonObject.getInt("NewDeaths");
+                                int TotalDeaths = jsonObject.getInt("TotalDeaths");
+                                int NewRecovered = jsonObject.getInt("NewRecovered");
+                                int TotalRecovered = jsonObject.getInt("TotalRecovered");
+
+                                int activeChng = NewConfirmed-NewRecovered-NewDeaths;
+                                if (activeChng<0){
+                                    activeNoChng.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_downward, 0, 0, 0);
+                                } else if (activeChng==0){
+                                    activeNoChng.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+                                } else {
+                                    activeNoChng.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_upward, 0, 0, 0);
+                                }
+
+                                activeNo.setText(String.valueOf(TotalConfirmed-TotalRecovered-TotalDeaths));
+                                activeNoChng.setText("( "+String.valueOf(Math.abs(activeChng))+" )");
+                                dischargeNO.setText(String.valueOf(TotalRecovered));
+                                dischargeNOChng.setText("( "+NewRecovered+" )");
+                                deathNo.setText(String.valueOf(TotalDeaths));
+                                deathNoChng.setText("( "+NewDeaths+" )");
+
+                                fillPatienceDate(TotalConfirmed-TotalRecovered-TotalDeaths, TotalRecovered,
+                                        TotalDeaths);
+
+                                barExecution();
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    error.printStackTrace();
+                }
+            });
+            requestQueue.add(request);
+
+
+
 
         } else {
-            Toast.makeText(this, parent.getSelectedItem().toString(), Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, parent.getSelectedItem().toString(), Toast.LENGTH_SHORT).show();
             setData(parent.getSelectedItem().toString());
         }
 
