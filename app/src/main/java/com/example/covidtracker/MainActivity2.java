@@ -27,6 +27,9 @@ import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,6 +48,7 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
     ArrayList<BarEntry> data;
     ArrayList<String> labelName;
     ArrayList<AxisData> axisData = new ArrayList<>();
+    private AdView adView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +63,12 @@ public class MainActivity2 extends AppCompatActivity implements AdapterView.OnIt
         deathNo = findViewById(R.id.death_no);
         deathNoChng = findViewById(R.id.death_no_change);
         barChart = findViewById(R.id.bar_graph);
+        adView = findViewById(R.id.adView);
+
+        MobileAds.initialize(this,"ca-app-pub-1717124682197622~2026026796");
+
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
 
         requestQueue = Volley.newRequestQueue(this);
 
